@@ -34,7 +34,7 @@ class BelongsToJson extends BelongsTo
         if (static::$constraints) {
             $table = $this->related->getTable();
 
-            $this->query->whereIn($table.'.'.$this->ownerKey, $this->getForeignKeys());
+            $this->query->whereIn($table . '.' . $this->ownerKey, $this->getForeignKeys());
         }
     }
 
@@ -137,11 +137,11 @@ class BelongsToJson extends BelongsTo
      */
     public function getRelationExistenceQueryForSelfRelation(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
-        $query->from($query->getModel()->getTable().' as '.$hash = $this->getRelationCountHash());
+        $query->from($query->getModel()->getTable() . ' as ' . $hash = $this->getRelationCountHash());
 
         $query->getModel()->setTable($hash);
 
-        $ownerKey = $this->relationExistenceQueryOwnerKey($query, $hash.'.'.$this->ownerKey);
+        $ownerKey = $this->relationExistenceQueryOwnerKey($query, $hash . '.' . $this->ownerKey);
 
         return $query->select($columns)->whereJsonContains(
             $this->getQualifiedPath(),
@@ -198,7 +198,11 @@ class BelongsToJson extends BelongsTo
     {
         $model = $model ?: $this->child;
 
-        $keys = (array) $model->{$this->foreignKey};
+        if ($model->{$this->foreignKey} instanceof \Illuminate\Support\Collection) {
+            $keys = $model->{$this->foreignKey}->toArray();
+        } else {
+            $keys = (array) $model->{$this->foreignKey};
+        }
 
         return array_filter($keys, function ($key) {
             return $key !== null;
